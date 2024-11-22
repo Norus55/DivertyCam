@@ -53,7 +53,7 @@ export const createPermission = async (req, res) => {
   
   export const deletePermission = async (req, res) => {
     try {
-      await Permission.findByIdAndRemove(req.params.id);
+      await Permission.findByIdAndDelete(req.params.id);
       res.status(204).json({ message: "Permission deleted" });
     } catch (error) {
       res.status(400).json({ message: "Error deleting permission" });
