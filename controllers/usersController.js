@@ -65,11 +65,19 @@ export const updateUser = async (req, res) => {
     }
 };
 
-export const deleteUser = async (req, res) => {
+export const deleteUser  = async (req, res) => {
     try {
-        await User.findByIdAndRemove(req.params.id);
-        res.status(204).json({ message: "User deleted" });
+        const user = await User.findByIdAndRemove(req.params.id);
+        
+        // Verifica si se encontró el usuario
+        if (!user) {
+            return res.status(404).json({ message: "User  not found" });
+        }
+
+        res.status(204).json({ message: "User  deleted" });
     } catch (error) {
-        res.status(400).json({ message: "Error deleting user" });
+        // Manejo de errores más específico
+        console.error(error); // Log del error para depuración
+        res.status(400).json({ message: "Error deleting user", error: error.message });
     }
 };
