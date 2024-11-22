@@ -45,7 +45,7 @@ export const updatePrivilege = async (req, res) => {
 
 export const deletePrivilege = async (req, res) => {
   try {
-    await Privilege.findByIdAndRemove(req.params.id);
+    await Privilege.findByIdAndDelete(req.params.id);
     res.status(204).json({ message: "Privilege deleted" });
   } catch (error) {
     res.status(400).json({ message: "Error deleting privilege" });
