@@ -67,7 +67,7 @@ export const updateUser = async (req, res) => {
 
 export const deleteUser  = async (req, res) => {
     try {
-        const user = await User.findByIdAndRemove(req.params.id);
+        const user = await User.findByIdAndDelete(req.params.id);
         
         // Verifica si se encontró el usuario
         if (!user) {
