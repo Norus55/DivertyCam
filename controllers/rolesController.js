@@ -70,7 +70,7 @@ export const updateRole = async (req, res) => {
 
 export const deleteRole = async (req, res) => {
     try {
-        await Role.findByIdAndRemove(req.params.id);
+        await Role.findByIdAndDelete(req.params.id);
         res.status(204).json({ message: "Role deleted" });
     } catch (error) {
         res.status(400).json({ message: "Error deleting role" });
