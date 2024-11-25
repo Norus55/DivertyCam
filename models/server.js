@@ -4,6 +4,7 @@ import permissionRoute from "../routes/permissionRoute.js";
 import privilegeRoute from "../routes/privilegeRoute.js";
 import roleRoute from "../routes/roleRoute.js";
 import userRoute from "../routes/userRoute.js";
+import cors from 'cors';
 
 
 class Server {
@@ -24,6 +25,7 @@ class Server {
 
     route() {
         this.app.use(json())
+        this.app.use(cors())
         this.app.use(this.pathUser, userRoute)
         this.app.use(this.pathRole, roleRoute)
         this.app.use(this.pathPermission, permissionRoute)
