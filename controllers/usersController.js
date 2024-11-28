@@ -1,83 +1,51 @@
-import User from "../models/users.js";
+import { model, Schema } from "mongoose"
+import bcrypt from 'bcryptjs'
 
-export const createUser = async (req, res) => {
-    try {
-        const user = new User(req.body);
-        await user.save();
-        res.status(201).json(user);
-    } catch (error) {
-        res.status(400).json({ message: "Error creating user" });
+const userSchema = new Schema({
+    name: {
+        type: String,
+        required: [true, 'Name is required']
+    },
+    email: {
+        type: String,
+        required: [true, 'Email is required'],
+        unique: true,
+        match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Please provide a valid email']
+    },
+    password: {
+        type: String,
+        required: [true, 'Password is required'],
+        select: false // Prevents password from being returned in queries
+    },
+    role: {
+        type: Schema.Types.ObjectId,
+        ref: 'Role',
+        required: true
     }
+}, { 
+    versionKey: false,
+    timestamps: true 
+})
+
+// Pre-save hook to hash password before saving
+userSchema.pre('save', async function(next) {
+    // Only hash the password if it has been modified (or is new)
+    if (!this.isModified('password')) return next();
+
+    try {
+        // Generate a salt
+        const salt = await bcrypt.genSalt(10);
+        // Hash the password along with the salt
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Method to compare password for login
+userSchema.methods.comparePassword = async function(candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
 };
 
-export const getUsers = async (req, res) => {
-    try {
-        const users = await User.find()
-            .populate({
-                path: 'role',
-                populate: {
-                    path: 'permission',
-                    populate: {
-                        path: 'privileges',
-                        select: '_id name'
-                    }
-                }
-            });
-        res.json(users);
-    } catch (error) {
-        console.log(error);
-        res.status(400).json({ message: "Error fetching users" });
-    }
-};
-
-export const getUser = async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id)
-            .populate({
-                path: 'role',
-                populate: {
-                    path: 'permission',
-                    populate: {
-                        path: 'privileges',
-                        select: '_id name'
-                    }
-                }
-            });
-        if (!user) {
-            res.status(404).json({ message: "User not found" });
-        } else {
-            res.json(user);
-        }
-    } catch (error) {
-        console.log(error);
-        res.status(400).json({ message: "Error fetching user" });
-    }
-};
-
-export const updateUser = async (req, res) => {
-    try {
-        const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-        });
-        res.json(user);
-    } catch (error) {
-        res.status(400).json({ message: "Error updating user" });
-    }
-};
-
-export const deleteUser  = async (req, res) => {
-    try {
-        const user = await User.findByIdAndDelete(req.params.id);
-        
-        // Verifica si se encontró el usuario
-        if (!user) {
-            return res.status(404).json({ message: "User  not found" });
-        }
-
-        res.status(204).json({ message: "User  deleted" });
-    } catch (error) {
-        // Manejo de errores más específico
-        console.error(error); // Log del error para depuración
-        res.status(400).json({ message: "Error deleting user", error: error.message });
-    }
-};
+export default model('User', userSchema, 'User')
